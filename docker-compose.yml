@@ -1,0 +1,38 @@
+version: '2'
+services:
+  nginx-gogs:
+    container_name: nginx-gogs
+    image: nginx
+    ports:
+      - "10080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    volumes_from:
+      - gogs
+
+  mysql-gogs:
+    container_name: mysql-gogs
+    image: mysql:5.7.13
+    volumes: 
+        - "./mysql:/var/lib/mysql"
+    restart: always
+    environment:
+        MYSQL_ROOT_PASSWORD: root_password
+        MYSQL_DATABASE: gogs
+        MYSQL_USER: gogs
+        MYSQL_PASSWORD: gogs_password
+
+  gogs:
+    container_name: gogs
+    image: gogs/gogs
+    restart: always
+    depends_on: 
+        - mysql-gogs
+    expose:
+        - 3000
+    ports:
+        - "10022:22"
+    volumes:
+        - ./gogs:/data
+    links:
+       - mysql-gogs
