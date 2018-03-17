@@ -1,28 +1,29 @@
-Private GOGS ( github-clone ) served through HTTPS via NGINX
+私有的 GOGS（github-clone）通过HTTPS通过NGINX提供服务
 ==========================================================
 
-## Requirement
+## 依赖环境
 * [Docker](https://docs.docker.com/linux/step_one/) (>= 1.10.3)
 * [docker-compose](https://docs.docker.com/compose/install/) (>= 1.6.2)
 
-# Build
-After installing the requirements, run inside this directory:
+# 构建
+升级完成系统依赖环境后，进入到项目目录执行下面的命令：
 
 ```
-docker-compose up
+docker-compose up -d
 ```
 
-## First run
-### Self-signed certificates using gogs
-During the first run, the `nginx` container `webserver` will complain that no certificates are available and will quit. (But `gitserver` will keep running.)
+## 首次运行
+### 使用gogs的自签名证书
+在第一次运行期间，nginx容器网络服务器将会提示没有证书可用并将退出。（但`gogs`将继续运行。）
 
-To solve that, open a terminal and execute (replace `(gitserver)` with the name of the container as printed by `docker-compose up` call):
+解决这个问题，打开终端并执行（用`docker`打印的容器名称替换（`gogs`））：
+
 
 ```
-docker exec -it (gitserver) bash
+docker exec -it gogs bash
 ```
 
-This will connect you to the running `gitserver` container and will launch an instance of bash inside it. Then enter (replace again `(hostname)` here with your domain name):
+这会将您连接到正在运行的`gogs`容器，并将在其中启动一个bash实例。然后输入（在这里用你的域名再次替换（主机名））：
 
 ```
 cd /data/gogs/conf/
@@ -30,40 +31,48 @@ cd /data/gogs/conf/
 exit
 ```
 
-That's it. You now have self-signed certificates by `gogs`. You can now restart the failed container:
+而已。您现在拥有`gogs`自签名证书。您现在可以重新启动失败的容器：
+
 ```
-docker-compose up
+docker-compose up -d
 ```
 
-### Autorithy signed certificates
-If you already have signed certificates, just copy them into: `/var/gogs/gogs/conf` in your local system. They will automatically mounted during when `docker-compose` is launched.
+### 授权签署的证书
+如果您已经签署了证书，只需将它们复制到本地系统中的`/var/gogs/gogs/conf`。他们将在`docker-compose`启动时自动挂载。
 
-Remember to rename the certificate: `cert.pem`, and the server key: `key.pem`.
+请记住重命名证书：`cert.pem`和服务器密钥：`key.pem`。
 
 
-# Usage
+# 用法
+您现在可以使用任何浏览器通过https访问自己托管的`gogs`服务。由于证书是自签名的，因此您会收到警告。
 
-You can now acces you self-hosted `gogs` service through HTTPS using any browser. You'll get a warning however as the certificate are self-signed.
+### `git`通过自签名https
 
-### `git` through self-signed HTTPS
-To use `git` with a self-signed, you need to disable SSL verification temporarly:
+要使用自签名的`git`，您需要暂时禁用ssl验证：
+
+
 ```
 export GIT_SSL_NO_VERIFY=true
 ```
-or permanently (:warning: ***DANGEROUS*** :no_pedestrians:):
+
+或者永久禁用
+
 ```
 git config --global http.sslverify false
 ```
 
-### `git` through ssh on a different port (*10022*)
-To use `git` with `ssh` on a different port than the default port *22*:
+### `git` 通过不同的端口SSH（10022）
+
+在不同于默认端口22的端口上使用git和ssh：
+
 ```
 git clone ssh://git@hostname:10022/user/repo.git
 ```
 
-Remember to add your `ssh` keys first!
+记得先添加你的ssh密钥！
 
-# References
+# 参考
+* [msis/docker-compose-nginx-gogs](https://github.com/msis/docker-compose-nginx-gogs)
 * [gogs/docker github](https://github.com/gogits/gogs/tree/master/docker)
 * [Unknown blog post](https://unknwon.io/setup-gogs-with-https/)
 * [ANAND MANI SANKAR blog post](http://anandmanisankar.com/posts/docker-container-nginx-node-redis-example/)
