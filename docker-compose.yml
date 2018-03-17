@@ -21,8 +21,8 @@ services:
     depends_on: 
         - mysql-gogs
     ports:
-        - "10022:22"
-        - "3000:3000"
+        - "${SSH_PORT}:22"
+        - "${GOGS_PORT}:3000"
     volumes:
         - ./gogs-data:/data
     links:
