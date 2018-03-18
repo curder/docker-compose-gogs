@@ -15,7 +15,7 @@ cp .env.example .env
 
 使用ip+端口的方式登录gogs初始化页面，将看到如下界面：
 
-[!](images/install.png)
+![Gogs初始化](images/install.png)
 
 # 构建
 升级完成系统依赖环境后，进入到项目目录执行下面的命令：
