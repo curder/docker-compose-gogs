@@ -1,11 +1,12 @@
-version: '2'
+version: '3'
 services:
 
   mysql-gogs:
     container_name: mysql-gogs
-    image: mysql:5.7.13
+    image: mysql:5.7
     volumes: 
-        - "./mysql-data:/var/lib/mysql"
+        - "./data/mysql:/var/lib/mysql"
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
     restart: always
     environment:
         MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -14,6 +15,7 @@ services:
         MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     networks:
         - gogs
+
   gogs:
     container_name: gogs
     image: gogs/gogs:latest
@@ -24,7 +26,7 @@ services:
         - "${SSH_PORT}:22"
         - "${GOGS_PORT}:3000"
     volumes:
-        - ./gogs-data:/data
+        - ./data/gogs:/data
     links:
        - mysql-gogs
     environment:
