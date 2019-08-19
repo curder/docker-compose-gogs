@@ -1,46 +1,39 @@
-version: '3'
+version: "3"
 services:
-
   mysql-gogs:
     container_name: mysql-gogs
     image: mysql:5.7
-    volumes: 
-        - "./data/mysql:/var/lib/mysql"
-    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     restart: always
     environment:
-        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-        MYSQL_DATABASE: ${MYSQL_DATABASE}
-        MYSQL_USER: ${MYSQL_USER}
-        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    networks:
-        - gogs
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: Asia/Shanghai
 
   gogs:
-    container_name: gogs
+    container_name: gogs-server
     image: gogs/gogs:latest
     restart: always
-    depends_on: 
-        - mysql-gogs
+    depends_on:
+      - mysql-gogs
     ports:
-        - "${SSH_PORT}:22"
-        - "${GOGS_PORT}:3000"
+      - "${SSH_PORT}:22"
+      - "${GOGS_PORT}:3000"
     volumes:
-        - ./data/gogs:/data
+      - ./data/gogs:/data
     links:
-       - mysql-gogs
+      - mysql-gogs
     environment:
-        - "RUN_CROUD=true"
-        - SSH_PORT=${SSH_PORT}
+      - "RUN_CROUD=true"
+      - SSH_PORT=${SSH_PORT}
     networks:
-        - gogs
+      - gogs
 
 networks:
-    gogs:
-      driver: bridge
-
-volumes:
-    gogs-data:
-      driver: local
-    mysql-data:
-      driver: local
+  gogs:
+    driver: bridge
