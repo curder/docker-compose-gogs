@@ -1,32 +1,49 @@
-version: "3"
-services:
-  gogs-mysql:
-    container_name: gogs-mysql
-    image: mysql:5.7
-    volumes:
-      - ./data/mysql:/var/lib/mysql
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: mysql_root_password
-      MYSQL_DATABASE: gogs
-      MYSQL_USER: gogs
-      MYSQL_PASSWORD: gogs_password
+version: "3.8"
 
-  gogs-server:
-    container_name: gogs-server
-    image: gogs/gogs:latest
+services:
+  # Gogs Server
+  gogs:
+    container_name: gogs
+    image: "gogs/gogs:0.12.9"
     restart: always
     ports:
-      - 1022:22
-      - 3000:3000
+      - "${FORWARD_SSH_PORT:-1022}:22"
+      - "${FORWARD_APP_PORT:-3000}:3000"
     volumes:
       - ./data/gogs:/data
-      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - gogs-mysql
+      db:
+        condition: service_healthy
+    networks:
+      - gogs
 
+  # MySQL Storage
+  db:
+    container_name: db
+    image: 'mysql/mysql-server:5.7.38'
+    volumes:
+      - ./my.cnf:/etc/my.cnf      
+      - ./data/mysql:/var/lib/mysql
+      - ./data/logs/mysql:/var/log/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: always
+    ports:
+      - "${FORWARD_DB_PORT:-33060}:3306"
+    environment:
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}" ]
+      retries: 3
+      timeout: 5s
+    networks:
+      - gogs
+
+# Docker Networks
 networks:
-  gogs-server:
+  gogs:
     driver: bridge
